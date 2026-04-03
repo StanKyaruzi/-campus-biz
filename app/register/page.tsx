@@ -1,7 +1,8 @@
 'use client';
+
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -10,9 +11,14 @@ export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
   const [formData, setFormData] = useState({
     name: '', email: '', password: '', confirmPassword: '', studentId: '', phone: ''
   });
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +67,8 @@ export default function RegisterPage() {
     router.push('/login?registered=true');
     setLoading(false);
   };
+
+  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-20">

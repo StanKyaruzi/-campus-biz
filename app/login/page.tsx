@@ -1,7 +1,8 @@
 'use client';
+
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -13,11 +14,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (typeof window === 'undefined') return;
 
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const user = users.find((u: any) => u.email === email && u.password === password);
@@ -34,6 +42,10 @@ export default function LoginPage() {
     }
     setLoading(false);
   };
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-20">

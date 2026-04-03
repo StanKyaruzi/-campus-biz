@@ -1,4 +1,5 @@
 'use client';
+
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
@@ -11,17 +12,13 @@ export default function MyItemsPage() {
   const [user, setUser] = useState<any>(null);
   const [myProducts, setMyProducts] = useState<any[]>([]);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const [editForm, setEditForm] = useState({
-    title: '',
-    description: '',
-    price: '',
-    category: '',
-    condition: '',
-    location: '',
-    phone: ''
+    title: '', description: '', price: '', category: '', condition: '', location: '', phone: ''
   });
 
   useEffect(() => {
+    setIsMounted(true);
     const storedUser = localStorage.getItem('user');
     if (!storedUser) {
       router.push('/login');
@@ -79,11 +76,11 @@ export default function MyItemsPage() {
     alert('Item updated! Pending admin approval.');
   };
 
+  if (!isMounted) return null;
   if (!user) return null;
 
   return (
     <div className="min-h-screen">
-      {/* Navigation */}
       <nav className="bg-black/50 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center flex-wrap gap-4">
           <Link href="/" className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">🎓 Campus Biz</Link>
@@ -99,7 +96,6 @@ export default function MyItemsPage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-white mb-8">My Items</h1>
 
-        {/* Edit Modal */}
         {editingProduct && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -112,22 +108,16 @@ export default function MyItemsPage() {
                 <textarea placeholder="Description" rows={3} required value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} className="input-field" />
                 <input type="number" placeholder="Price (TSh)" required value={editForm.price} onChange={(e) => setEditForm({...editForm, price: e.target.value})} className="input-field" />
                 <select value={editForm.category} onChange={(e) => setEditForm({...editForm, category: e.target.value})} className="input-field">
-                  <option value="Electronics">Electronics</option>
-                  <option value="Clothing">Clothing</option>
-                  <option value="Books">Books</option>
-                  <option value="Furniture">Furniture</option>
-                  <option value="Sports">Sports</option>
-                  <option value="Vehicles">Vehicles</option>
+                  <option value="Electronics">Electronics</option><option value="Clothing">Clothing</option>
+                  <option value="Books">Books</option><option value="Furniture">Furniture</option>
+                  <option value="Sports">Sports</option><option value="Vehicles">Vehicles</option>
                 </select>
                 <select value={editForm.condition} onChange={(e) => setEditForm({...editForm, condition: e.target.value})} className="input-field">
-                  <option value="New">New</option>
-                  <option value="Like New">Like New</option>
-                  <option value="Good">Good</option>
-                  <option value="Fair">Fair</option>
+                  <option value="New">New</option><option value="Like New">Like New</option>
+                  <option value="Good">Good</option><option value="Fair">Fair</option>
                 </select>
                 <input type="text" placeholder="Location" required value={editForm.location} onChange={(e) => setEditForm({...editForm, location: e.target.value})} className="input-field" />
                 <input type="tel" placeholder="Phone Number" required value={editForm.phone} onChange={(e) => setEditForm({...editForm, phone: e.target.value})} className="input-field" />
-                
                 <div className="flex gap-3 mt-4">
                   <button type="submit" className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Save Changes</button>
                   <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg">Cancel</button>
@@ -164,18 +154,15 @@ export default function MyItemsPage() {
                       <span className="text-gray-400">📂 {product.category}</span>
                       <span className="text-gray-400">📍 {product.location}</span>
                       <span className="text-gray-400">📞 {product.phone}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${
-                        product.status === 'approved' ? 'bg-green-600' : 
-                        product.status === 'pending' ? 'bg-yellow-600' : 'bg-red-600'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${product.status === 'approved' ? 'bg-green-600' : product.status === 'pending' ? 'bg-yellow-600' : 'bg-red-600'}`}>
                         {product.status || 'pending'}
                       </span>
                     </div>
-                    <p className="text-gray-500 text-sm mt-2 line-clamp-2">{product.description}</p>
+                    <p className="text-gray-500 text-sm mt-2">{product.description?.substring(0, 100)}...</p>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => startEdit(product)} className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm transition">✏️ Edit</button>
-                    <button onClick={() => handleDelete(product.id)} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition">🗑️ Delete</button>
+                    <button onClick={() => startEdit(product)} className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm">✏️ Edit</button>
+                    <button onClick={() => handleDelete(product.id)} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">🗑️ Delete</button>
                   </div>
                 </div>
               </div>
@@ -183,17 +170,6 @@ export default function MyItemsPage() {
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      <footer className="bg-black/80 border-t border-white/10 py-8 mt-12">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-500 text-sm">© 2026 Campus Biz. All rights reserved.</p>
-          <div className="flex justify-center gap-4 mt-2">
-            <a href="mailto:stankyaruzi@gmail.com" className="text-gray-500 text-xs hover:text-blue-400">Contact Support</a>
-            <Link href="/" className="text-gray-500 text-xs hover:text-white">Home</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

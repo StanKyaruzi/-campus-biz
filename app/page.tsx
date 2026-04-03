@@ -1,4 +1,5 @@
 'use client';
+
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
@@ -8,8 +9,10 @@ import { motion } from 'framer-motion';
 export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const stored = localStorage.getItem('user');
     if (stored) setUser(JSON.parse(stored));
     
@@ -29,9 +32,10 @@ export default function Home() {
     { name: 'Vehicles', icon: '🚗', link: '/products?category=vehicles' },
   ];
 
+  if (!isMounted) return null;
+
   return (
     <div className="min-h-screen">
-      {/* Navigation */}
       <nav className="fixed top-0 w-full bg-black/50 backdrop-blur-xl z-50 border-b border-white/10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center flex-wrap gap-4">
           <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -62,7 +66,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-20">
         <div className="text-center px-4">
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -78,7 +81,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Categories */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-white mb-12">Browse Categories</h2>
@@ -95,7 +97,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Latest Items */}
       <section className="py-20 bg-black/30">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-white mb-12">Latest Items</h2>
@@ -121,7 +122,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-black/80 border-t border-white/10 py-12 mt-20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
@@ -133,7 +133,6 @@ export default function Home() {
                 <a href="https://tiktok.com/@amani_globall" target="_blank" className="text-gray-400 hover:text-white text-2xl">🎵</a>
               </div>
             </div>
-
             <div>
               <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
               <ul className="space-y-2 text-sm">
@@ -141,10 +140,8 @@ export default function Home() {
                 <li><Link href="/sell" className="text-gray-400 hover:text-blue-400">Sell an Item</Link></li>
                 <li><Link href="/my-items" className="text-gray-400 hover:text-blue-400">My Items</Link></li>
                 <li><Link href="/register" className="text-gray-400 hover:text-blue-400">Create Account</Link></li>
-                <li><Link href="/login" className="text-gray-400 hover:text-blue-400">Login</Link></li>
               </ul>
             </div>
-
             <div>
               <h3 className="text-lg font-semibold text-white mb-4">Contact & Support</h3>
               <ul className="space-y-2 text-sm">
@@ -152,7 +149,6 @@ export default function Home() {
                 <li className="text-gray-400">📞 <a href="tel:+255775123741" className="hover:text-blue-400">0775 123 741</a></li>
               </ul>
             </div>
-
             <div>
               <h3 className="text-lg font-semibold text-white mb-4">Need Help?</h3>
               <ul className="space-y-2 text-sm">
@@ -161,7 +157,6 @@ export default function Home() {
               </ul>
             </div>
           </div>
-
           <div className="border-t border-white/10 pt-6 text-center">
             <p className="text-gray-500 text-sm">© 2026 Campus Biz. All rights reserved.</p>
           </div>

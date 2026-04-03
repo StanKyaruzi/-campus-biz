@@ -1,4 +1,5 @@
 'use client';
+
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
@@ -12,8 +13,10 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const stored = localStorage.getItem('user');
     if (stored) setUser(JSON.parse(stored));
     
@@ -35,6 +38,8 @@ export default function ProductsPage() {
   }, [search, category, products]);
 
   const categories = ['all', 'Electronics', 'Clothing', 'Books', 'Furniture', 'Sports', 'Vehicles'];
+
+  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen">

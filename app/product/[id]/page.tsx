@@ -1,4 +1,5 @@
 'use client';
+
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
@@ -11,8 +12,10 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const products = JSON.parse(localStorage.getItem('products') || '[]');
     const found = products.find((p: any) => p.id === params.id);
     if (found && found.status === 'approved') {
@@ -23,6 +26,7 @@ export default function ProductDetailPage() {
     setLoading(false);
   }, [params.id, router]);
 
+  if (!isMounted) return null;
   if (loading) return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-white">Product not found</div>;
 
@@ -38,7 +42,13 @@ export default function ProductDetailPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card p-8">
           <div className="text-center mb-8">
-            <div className="text-7xl mb-4">📦</div>
+            <div className="text-7xl mb-4">
+              {product.image ? (
+                <img src={product.image} alt={product.title} className="w-48 h-48 object-cover rounded-lg mx-auto" />
+              ) : (
+                '📦'
+              )}
+            </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">{product.title}</h1>
             <p className="text-3xl font-bold text-blue-400">TSh {product.price.toLocaleString()}</p>
           </div>

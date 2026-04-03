@@ -1,4 +1,5 @@
 'use client';
+
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
@@ -11,19 +12,15 @@ export default function SellPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [user, setUser] = useState<any>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    category: 'Electronics',
-    condition: 'Good',
-    location: '',
-    phone: ''
+    title: '', description: '', price: '', category: 'Electronics', condition: 'Good', location: '', phone: ''
   });
 
   useEffect(() => {
+    setIsMounted(true);
     const storedUser = localStorage.getItem('user');
     if (!storedUser) {
       router.push('/login');
@@ -55,7 +52,6 @@ export default function SellPage() {
 
     if (!user) return;
 
-    // Validate location
     if (!formData.location.trim()) {
       setError('Please enter your location');
       setLoading(false);
@@ -90,6 +86,7 @@ export default function SellPage() {
     setLoading(false);
   };
 
+  if (!isMounted) return null;
   if (!user) return null;
 
   return (
@@ -106,20 +103,13 @@ export default function SellPage() {
           {success && <div className="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-xl mb-6 text-center">{success}</div>}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Image Upload */}
             <div>
               <label className="block text-gray-300 mb-2">Product Image</label>
               <div className="border-2 border-dashed border-white/20 rounded-xl p-4 text-center hover:border-blue-500 transition cursor-pointer">
                 {imagePreview ? (
                   <div className="relative">
                     <img src={imagePreview} alt="Preview" className="max-h-48 mx-auto rounded-lg" />
-                    <button 
-                      type="button"
-                      onClick={() => { setImagePreview(null); setImageFile(null); }}
-                      className="absolute top-2 right-2 bg-red-600 rounded-full w-6 h-6 text-white text-sm"
-                    >
-                      ×
-                    </button>
+                    <button type="button" onClick={() => { setImagePreview(null); setImageFile(null); }} className="absolute top-2 right-2 bg-red-600 rounded-full w-6 h-6 text-white text-sm">×</button>
                   </div>
                 ) : (
                   <label className="cursor-pointer block py-8">
@@ -145,7 +135,7 @@ export default function SellPage() {
               <select value={formData.condition} onChange={(e) => setFormData({...formData, condition: e.target.value})} className="input-field">
                 {conditions.map(c => <option key={c}>{c}</option>)}
               </select>
-              <input type="text" placeholder="Location (e.g., Library, Student Center, Dormitory) *" required value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} className="input-field" />
+              <input type="text" placeholder="Location (e.g., Library, Student Center) *" required value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} className="input-field" />
             </div>
 
             <input type="tel" placeholder="WhatsApp / Phone Number *" required value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="input-field" />
