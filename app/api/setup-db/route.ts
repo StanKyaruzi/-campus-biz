@@ -1,46 +1,29 @@
 import { NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
 
 export async function GET() {
   try {
-    const sql = neon(process.env.DATABASE_URL!);
+    // Check if DATABASE_URL exists
+    const dbUrl = process.env.DATABASE_URL;
     
-    // Create users table
-    await sql`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        name TEXT NOT NULL,
-        password TEXT NOT NULL,
-        student_id TEXT,
-        phone TEXT,
-        role TEXT DEFAULT 'user',
-        created_at TIMESTAMP DEFAULT NOW()
-      )
-    `;
+    if (!dbUrl) {
+      return NextResponse.json({ 
+        error: 'DATABASE_URL not set in environment variables',
+        fix: 'Go to Vercel → Settings → Environment Variables → Add DATABASE_URL'
+      }, { status: 500 });
+    }
     
-    // Create products table
-    await sql`
-      CREATE TABLE IF NOT EXISTS products (
-        id SERIAL PRIMARY KEY,
-        title TEXT NOT NULL,
-        description TEXT,
-        price INTEGER,
-        category TEXT,
-        condition TEXT,
-        location TEXT,
-        image TEXT,
-        phone TEXT,
-        seller_name TEXT,
-        seller_email TEXT,
-        status TEXT DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT NOW()
-      )
-    `;
+    // Parse the connection string
+    const url = new URL(dbUrl);
+    const host = url.hostname;
+    const database = url.pathname.slice(1);
     
-    return NextResponse.json({ success: true, message: 'Database tables created!' });
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Database URL is configured',
+      host: host,
+      database: database
+    });
   } catch (error) {
-    console.error('Error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
