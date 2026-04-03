@@ -1,5 +1,6 @@
 'use client';
 
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
@@ -43,9 +44,7 @@ export default function LoginPage() {
     setLoading(false);
   };
 
-  if (!isMounted) {
-    return null;
-  }
+  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-20">
