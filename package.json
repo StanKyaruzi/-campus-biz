@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
     "@tailwindcss/postcss": "^4.2.2",
     "bcryptjs": "^2.4.3",
     "framer-motion": "^11.0.0",
