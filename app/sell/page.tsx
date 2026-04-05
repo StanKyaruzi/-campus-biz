@@ -1,8 +1,5 @@
 'use client';
 
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -15,7 +12,6 @@ export default function SellPage() {
   const [user, setUser] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     title: '', description: '', price: '', category: 'Electronics', condition: 'Good', location: '', phone: ''
   });
@@ -36,7 +32,6 @@ export default function SellPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -59,31 +54,38 @@ export default function SellPage() {
       return;
     }
 
-    let imageUrl = null;
-    if (imagePreview) {
-      imageUrl = imagePreview;
-    }
-
-    const products = JSON.parse(localStorage.getItem('products') || '[]');
-    const newProduct = {
-      id: Date.now().toString(),
-      ...formData,
+    const productData = {
+      title: formData.title,
+      description: formData.description,
       price: Number(formData.price),
-      sellerId: user.email,
-      sellerName: user.name,
+      category: formData.category,
+      condition: formData.condition,
+      location: formData.location,
       phone: formData.phone,
-      image: imageUrl,
-      status: 'pending',
-      createdAt: new Date().toISOString()
+      image: imagePreview,
+      seller_name: user.name,
+      seller_email: user.email,
+      status: 'pending'
     };
-    products.unshift(newProduct);
-    localStorage.setItem('products', JSON.stringify(products));
 
-    setSuccess('Item posted! Pending admin approval.');
-    setFormData({ title: '', description: '', price: '', category: 'Electronics', condition: 'Good', location: '', phone: '' });
-    setImagePreview(null);
-    setImageFile(null);
-    setTimeout(() => router.push('/'), 2000);
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData)
+      });
+
+      if (res.ok) {
+        setSuccess('Item posted! Pending admin approval.');
+        setFormData({ title: '', description: '', price: '', category: 'Electronics', condition: 'Good', location: '', phone: '' });
+        setImagePreview(null);
+        setTimeout(() => router.push('/'), 2000);
+      } else {
+        setError('Failed to post item');
+      }
+    } catch (err) {
+      setError('Something went wrong');
+    }
     setLoading(false);
   };
 
@@ -110,7 +112,7 @@ export default function SellPage() {
                 {imagePreview ? (
                   <div className="relative">
                     <img src={imagePreview} alt="Preview" className="max-h-48 mx-auto rounded-lg" />
-                    <button type="button" onClick={() => { setImagePreview(null); setImageFile(null); }} className="absolute top-2 right-2 bg-red-600 rounded-full w-6 h-6 text-white text-sm">×</button>
+                    <button type="button" onClick={() => { setImagePreview(null); }} className="absolute top-2 right-2 bg-red-600 rounded-full w-6 h-6 text-white text-sm">×</button>
                   </div>
                 ) : (
                   <label className="cursor-pointer block py-8">

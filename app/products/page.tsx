@@ -21,20 +21,24 @@ export default function ProductsPage() {
     const stored = localStorage.getItem('user');
     if (stored) setUser(JSON.parse(stored));
     
-    const storedProducts = localStorage.getItem('products');
-    if (storedProducts) {
-      const all = JSON.parse(storedProducts);
-      const approved = all.filter((p: any) => p.status === 'approved');
-      setProducts(approved);
-      setFiltered(approved);
-    }
-    setLoading(false);
+    // Load products from Supabase API
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data);
+        setFiltered(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error loading products:', err);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
     let results = products;
-    if (search) results = results.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
-    if (category !== 'all') results = results.filter(p => p.category.toLowerCase() === category.toLowerCase());
+    if (search) results = results.filter(p => p.title?.toLowerCase().includes(search.toLowerCase()));
+    if (category !== 'all') results = results.filter(p => p.category?.toLowerCase() === category.toLowerCase());
     setFiltered(results);
   }, [search, category, products]);
 
@@ -88,12 +92,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="p-5">
                     <h3 className="text-xl font-semibold text-white mb-2">{product.title}</h3>
-                    <p className="text-2xl font-bold text-blue-400 mb-3">TSh {product.price.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-blue-400 mb-3">TSh {product.price?.toLocaleString()}</p>
                     <div className="flex justify-between items-center text-gray-400 text-sm">
                       <span>📍 {product.location}</span>
                       <span>📞 {product.phone}</span>
                     </div>
-                    <div className="mt-2 text-gray-500 text-xs">Seller: {product.sellerName}</div>
+                    <div className="mt-2 text-gray-500 text-xs">Seller: {product.seller_name}</div>
                   </div>
                 </motion.div>
               </Link>

@@ -13,16 +13,18 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-    const stored = localStorage.getItem('user');
-    if (stored) setUser(JSON.parse(stored));
-    
-    const storedProducts = localStorage.getItem('products');
-    if (storedProducts) {
-      const all = JSON.parse(storedProducts);
-      setProducts(all.filter((p: any) => p.status === 'approved').slice(0, 6));
-    }
-  }, []);
+  setIsMounted(true);
+  const stored = localStorage.getItem('user');
+  if (stored) setUser(JSON.parse(stored));
+  
+  // Load products from Supabase
+  fetch('/api/products')
+    .then(res => res.json())
+    .then(data => {
+      setProducts(data.slice(0, 6));
+    })
+    .catch(err => console.error('Error loading products:', err));
+}, []);
 
   const categories = [
     { name: 'Electronics', icon: '📱', link: '/products?category=electronics' },
