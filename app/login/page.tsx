@@ -1,50 +1,47 @@
 'use client';
 
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
-
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    if (typeof window === 'undefined') return;
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find((u: any) => u.email === email && u.password === password);
+      const data = await res.json();
 
-    if (user) {
-      localStorage.setItem('user', JSON.stringify({ name: user.name, email: user.email, role: user.role }));
-      if (user.role === 'admin') {
-        router.push('/admin');
+      if (res.ok && data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.user.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/');
+        }
       } else {
-        router.push('/');
+        setError(data.error || 'Invalid email or password');
       }
-    } else {
-      setError('Invalid email or password');
+    } catch (err) {
+      setError('Something went wrong');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
-
-  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-20">
@@ -54,12 +51,6 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
           <p className="text-gray-400 text-sm mt-2">Login to your account</p>
         </div>
-        
-        {searchParams.get('registered') && (
-          <div className="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-xl mb-6 text-center">
-            Account created! Please login.
-          </div>
-        )}
 
         {error && (
           <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-xl mb-6 text-center">
@@ -70,15 +61,33 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-gray-300 mb-2">Email Address</label>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="input-field" />
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-field"
+              placeholder="admin@campusbiz.com"
+            />
           </div>
 
           <div>
             <label className="block text-gray-300 mb-2">Password</label>
-            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="input-field" />
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field"
+              placeholder="••••••"
+            />
           </div>
 
-          <button type="submit" disabled={loading} className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl font-semibold transition-all disabled:opacity-50">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl font-semibold transition-all disabled:opacity-50"
+          >
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
