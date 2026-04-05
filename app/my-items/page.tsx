@@ -14,6 +14,7 @@ export default function MyItemsPage() {
   const [myProducts, setMyProducts] = useState<any[]>([]);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [editForm, setEditForm] = useState({
     title: '', description: '', price: '', category: '', condition: '', location: '', phone: ''
   });
@@ -28,18 +29,34 @@ export default function MyItemsPage() {
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
     
-    const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
-    const myItems = allProducts.filter((p: any) => p.sellerId === parsedUser.email);
-    setMyProducts(myItems);
+    // Load user's products from Supabase
+    fetch('/api/my-products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seller_email: parsedUser.email })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setMyProducts(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        setLoading(false);
+      });
   }, [router]);
 
-  const handleDelete = (productId: string) => {
+  const handleDelete = async (productId: string) => {
     if (confirm('Are you sure you want to delete this item?')) {
-      const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
-      const updated = allProducts.filter((p: any) => p.id !== productId);
-      localStorage.setItem('products', JSON.stringify(updated));
-      setMyProducts(myProducts.filter(p => p.id !== productId));
-      alert('Item deleted successfully!');
+      try {
+        await fetch(`/api/products/${productId}`, {
+          method: 'DELETE'
+        });
+        setMyProducts(myProducts.filter(p => p.id !== productId));
+        alert('Item deleted successfully!');
+      } catch (err) {
+        alert('Failed to delete item');
+      }
     }
   };
 
@@ -47,7 +64,7 @@ export default function MyItemsPage() {
     setEditingProduct(product);
     setEditForm({
       title: product.title,
-      description: product.description,
+      description: product.description || '',
       price: product.price.toString(),
       category: product.category,
       condition: product.condition,
@@ -56,25 +73,37 @@ export default function MyItemsPage() {
     });
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
-    const updated = allProducts.map((p: any) => 
-      p.id === editingProduct.id 
-        ? { ...p, ...editForm, price: Number(editForm.price), status: 'pending' }
-        : p
-    );
-    localStorage.setItem('products', JSON.stringify(updated));
-    
-    setMyProducts(myProducts.map(p => 
-      p.id === editingProduct.id 
-        ? { ...p, ...editForm, price: Number(editForm.price), status: 'pending' }
-        : p
-    ));
-    
-    setEditingProduct(null);
-    alert('Item updated! Pending admin approval.');
+    try {
+      await fetch(`/api/products/${editingProduct.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editForm.title,
+          description: editForm.description,
+          price: Number(editForm.price),
+          category: editForm.category,
+          condition: editForm.condition,
+          location: editForm.location,
+          phone: editForm.phone,
+          status: 'pending'
+        })
+      });
+      
+      // Update local state
+      setMyProducts(myProducts.map(p => 
+        p.id === editingProduct.id 
+          ? { ...p, ...editForm, price: Number(editForm.price), status: 'pending' }
+          : p
+      ));
+      
+      setEditingProduct(null);
+      alert('Item updated! Pending admin approval.');
+    } catch (err) {
+      alert('Failed to update item');
+    }
   };
 
   if (!isMounted) return null;
@@ -97,6 +126,7 @@ export default function MyItemsPage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-white mb-8">My Items</h1>
 
+        {/* Edit Modal */}
         {editingProduct && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -109,13 +139,18 @@ export default function MyItemsPage() {
                 <textarea placeholder="Description" rows={3} required value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} className="input-field" />
                 <input type="number" placeholder="Price (TSh)" required value={editForm.price} onChange={(e) => setEditForm({...editForm, price: e.target.value})} className="input-field" />
                 <select value={editForm.category} onChange={(e) => setEditForm({...editForm, category: e.target.value})} className="input-field">
-                  <option value="Electronics">Electronics</option><option value="Clothing">Clothing</option>
-                  <option value="Books">Books</option><option value="Furniture">Furniture</option>
-                  <option value="Sports">Sports</option><option value="Vehicles">Vehicles</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Clothing">Clothing</option>
+                  <option value="Books">Books</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Sports">Sports</option>
+                  <option value="Vehicles">Vehicles</option>
                 </select>
                 <select value={editForm.condition} onChange={(e) => setEditForm({...editForm, condition: e.target.value})} className="input-field">
-                  <option value="New">New</option><option value="Like New">Like New</option>
-                  <option value="Good">Good</option><option value="Fair">Fair</option>
+                  <option value="New">New</option>
+                  <option value="Like New">Like New</option>
+                  <option value="Good">Good</option>
+                  <option value="Fair">Fair</option>
                 </select>
                 <input type="text" placeholder="Location" required value={editForm.location} onChange={(e) => setEditForm({...editForm, location: e.target.value})} className="input-field" />
                 <input type="tel" placeholder="Phone Number" required value={editForm.phone} onChange={(e) => setEditForm({...editForm, phone: e.target.value})} className="input-field" />
@@ -128,7 +163,9 @@ export default function MyItemsPage() {
           </div>
         )}
 
-        {myProducts.length === 0 ? (
+        {loading ? (
+          <div className="text-center text-gray-400 py-20">Loading...</div>
+        ) : myProducts.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">📦</div>
             <p className="text-gray-400 text-lg">You haven't posted any items yet.</p>
@@ -148,14 +185,17 @@ export default function MyItemsPage() {
                       )}
                       <div>
                         <h3 className="text-xl font-semibold text-white">{product.title}</h3>
-                        <p className="text-2xl font-bold text-blue-400">TSh {product.price.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-blue-400">TSh {product.price?.toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-3 mt-3 text-sm">
                       <span className="text-gray-400">📂 {product.category}</span>
                       <span className="text-gray-400">📍 {product.location}</span>
                       <span className="text-gray-400">📞 {product.phone}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${product.status === 'approved' ? 'bg-green-600' : product.status === 'pending' ? 'bg-yellow-600' : 'bg-red-600'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        product.status === 'approved' ? 'bg-green-600' : 
+                        product.status === 'pending' ? 'bg-yellow-600' : 'bg-red-600'
+                      }`}>
                         {product.status || 'pending'}
                       </span>
                     </div>

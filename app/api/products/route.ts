@@ -29,12 +29,25 @@ export async function POST(request: Request) {
         'Authorization': `Bearer ${supabaseKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(product)
+      body: JSON.stringify({
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        category: product.category,
+        condition: product.condition,
+        location: product.location,
+        phone: product.phone,
+        image: product.image,
+        seller_name: product.seller_name,
+        seller_email: product.seller_email,
+        status: 'pending'
+      })
     });
     
     const data = await response.json();
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
+    console.error('POST error:', error);
     return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
   }
 }
