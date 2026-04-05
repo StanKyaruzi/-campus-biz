@@ -5,10 +5,11 @@ const supabaseKey = 'sb_publishable_pw43WcZAdlmXcd2DG57OPQ_hcTOTj1B';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/products?id=eq.${params.id}`, {
+    const response = await fetch(`${supabaseUrl}/rest/v1/products?id=eq.${id}`, {
       headers: {
         'apikey': supabaseKey,
         'Authorization': `Bearer ${supabaseKey}`
@@ -23,12 +24,13 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const updates = await request.json();
     
-    await fetch(`${supabaseUrl}/rest/v1/products?id=eq.${params.id}`, {
+    await fetch(`${supabaseUrl}/rest/v1/products?id=eq.${id}`, {
       method: 'PATCH',
       headers: {
         'apikey': supabaseKey,
@@ -46,10 +48,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    await fetch(`${supabaseUrl}/rest/v1/products?id=eq.${params.id}`, {
+    await fetch(`${supabaseUrl}/rest/v1/products?id=eq.${id}`, {
       method: 'DELETE',
       headers: {
         'apikey': supabaseKey,
