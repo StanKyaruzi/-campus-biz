@@ -22,6 +22,12 @@ export async function POST(request: Request) {
   try {
     const product = await request.json();
     
+    // Remove image if it's too large (base64)
+    const productToSave = { ...product };
+    if (productToSave.image && productToSave.image.length > 50000) {
+      delete productToSave.image; // Skip image if too large
+    }
+    
     const response = await fetch(`${supabaseUrl}/rest/v1/products`, {
       method: 'POST',
       headers: {
@@ -29,20 +35,14 @@ export async function POST(request: Request) {
         'Authorization': `Bearer ${supabaseKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        title: product.title,
-        description: product.description,
-        price: product.price,
-        category: product.category,
-        condition: product.condition,
-        location: product.location,
-        phone: product.phone,
-        image: product.image,
-        seller_name: product.seller_name,
-        seller_email: product.seller_email,
-        status: 'pending'
-      })
+      body: JSON.stringify(productToSave)
     });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Supabase error:', errorText);
+      return NextResponse.json({ error: 'Failed to save to database' }, { status: 500 });
+    }
     
     const data = await response.json();
     return NextResponse.json(data, { status: 201 });
