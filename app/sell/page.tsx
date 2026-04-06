@@ -1,5 +1,8 @@
 'use client';
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -62,7 +65,6 @@ export default function SellPage() {
       condition: formData.condition,
       location: formData.location,
       phone: formData.phone,
-      image: imagePreview,
       seller_name: user.name,
       seller_email: user.email,
       status: 'pending'
@@ -79,9 +81,10 @@ export default function SellPage() {
         setSuccess('Item posted! Pending admin approval.');
         setFormData({ title: '', description: '', price: '', category: 'Electronics', condition: 'Good', location: '', phone: '' });
         setImagePreview(null);
-        setTimeout(() => router.push('/'), 2000);
+        // No redirect - stay on page to avoid crash
       } else {
-        setError('Failed to post item');
+        const err = await res.json();
+        setError(err.error || 'Failed to post item');
       }
     } catch (err) {
       setError('Something went wrong');
