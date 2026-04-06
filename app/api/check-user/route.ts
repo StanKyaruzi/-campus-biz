@@ -1,22 +1,18 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
 
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    // Test if supabase is configured
-    const { data, error } = await supabase
-      .from('users')
-      .select('count');
+    const { email } = await request.json();
     
+    // For now, return a mock response
     return NextResponse.json({ 
-      success: true, 
-      message: 'Supabase connected',
-      error: error?.message 
+      user: { 
+        email: email,
+        name: 'Admin User',
+        role: 'admin'
+      } 
     });
   } catch (error) {
-    return NextResponse.json({ 
-      success: false, 
-      error: String(error) 
-    });
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }
