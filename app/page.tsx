@@ -13,18 +13,17 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-  setIsMounted(true);
-  const stored = localStorage.getItem('user');
-  if (stored) setUser(JSON.parse(stored));
-  
-  // Load products from Supabase
-  fetch('/api/products')
-    .then(res => res.json())
-    .then(data => {
-      setProducts(data.slice(0, 6));
-    })
-    .catch(err => console.error('Error loading products:', err));
-}, []);
+    setIsMounted(true);
+    const stored = localStorage.getItem('user');
+    if (stored) setUser(JSON.parse(stored));
+    
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data.slice(0, 6));
+      })
+      .catch(err => console.error('Error loading products:', err));
+  }, []);
 
   const categories = [
     { name: 'Electronics', icon: '📱', link: '/products?category=electronics' },
@@ -112,10 +111,10 @@ export default function Home() {
                   <div className="card p-5 hover:transform hover:-translate-y-2 transition-all">
                     <div className="text-5xl mb-3">📦</div>
                     <h3 className="text-xl font-semibold text-white mb-2">{product.title}</h3>
-                    <p className="text-2xl font-bold text-blue-400">TSh {product.price.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-blue-400">TSh {product.price ? product.price.toLocaleString() : '0'}</p>
                     <div className="flex justify-between text-gray-400 text-sm mt-2">
-                      <span>📍 {product.location}</span>
-                      <span>📞 {product.phone}</span>
+                      <span>📍 {product.location || 'Campus'}</span>
+                      <span>📞 {product.phone || 'No phone'}</span>
                     </div>
                   </div>
                 </Link>
