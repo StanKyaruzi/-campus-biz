@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-
-let productsStore: any[] = [];
+import { getProducts, updateProduct, deleteProduct } from '@/lib/data';
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const product = productsStore.find(p => p.id === id);
+  const products = getProducts();
+  const product = products.find((p: any) => p.id === id);
   return NextResponse.json(product || null);
 }
 
@@ -17,10 +17,7 @@ export async function PUT(
 ) {
   const { id } = await params;
   const updates = await request.json();
-  const index = productsStore.findIndex(p => p.id === id);
-  if (index !== -1) {
-    productsStore[index] = { ...productsStore[index], ...updates };
-  }
+  updateProduct(id, updates);
   return NextResponse.json({ success: true });
 }
 
@@ -29,6 +26,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  productsStore = productsStore.filter(p => p.id !== id);
+  deleteProduct(id);
   return NextResponse.json({ success: true });
 }

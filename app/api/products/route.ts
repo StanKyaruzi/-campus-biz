@@ -1,21 +1,16 @@
 import { NextResponse } from 'next/server';
-
-let productsStore: any[] = [];
+import { getProducts, addProduct } from '@/lib/data';
 
 export async function GET() {
-  return NextResponse.json(productsStore.filter(p => p.status === 'approved'));
+  const products = getProducts();
+  const approved = products.filter((p: any) => p.status === 'approved');
+  return NextResponse.json(approved);
 }
 
 export async function POST(request: Request) {
   try {
     const product = await request.json();
-    const newProduct = {
-      id: Date.now().toString(),
-      ...product,
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-    productsStore.unshift(newProduct);
+    const newProduct = addProduct({ ...product, status: 'pending' });
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed' }, { status: 500 });
