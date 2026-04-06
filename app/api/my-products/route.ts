@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 
+let productsStore: any[] = [];
+
 export async function POST(request: Request) {
   try {
     const { seller_email } = await request.json();
-    
-    // Return empty array for now
-    return NextResponse.json([]);
+    const products = productsStore.filter(p => p.seller_email === seller_email);
+    return NextResponse.json(products);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+    return NextResponse.json([]);
   }
 }
