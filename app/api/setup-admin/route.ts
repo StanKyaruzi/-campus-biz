@@ -1,23 +1,32 @@
 import { NextResponse } from 'next/server';
-
-// Simple in-memory storage for now (will work immediately)
-let adminUsers: string[] = [];
+import { addUser, findUserByEmail, getUsers, saveUsers } from '@/lib/data';
 
 export async function POST(request: Request) {
   try {
     const { email, name, password, studentId, phone } = await request.json();
     
-    // Store in memory
-    adminUsers.push(email);
+    let user = findUserByEmail(email);
     
-    console.log('Admin setup:', { email, name, studentId, phone });
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Admin account created! You can now login.',
-      admin: { email, name, role: 'admin' }
-    });
+    if (user) {
+      // Update existing user to admin
+      const users = getUsers();
+      const index = users.findIndex((u: any) => u.email === email);
+      users[index].role = 'admin';
+      saveUsers(users);
+      return NextResponse.json({ message: 'User updated to admin', user: users[index] });
+    } else {
+      // Create new admin user
+      const newUser = addUser({
+        email,
+        name,
+        password,
+        studentId,
+        phone,
+        role: 'admin'
+      });
+      return NextResponse.json({ message: 'Admin created', user: newUser });
+    }
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }
