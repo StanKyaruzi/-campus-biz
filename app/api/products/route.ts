@@ -1,18 +1,24 @@
 import { NextResponse } from 'next/server';
-import { getProducts, addProduct } from '@/lib/data';
+
+// Simple in-memory storage
+let products: any[] = [];
 
 export async function GET() {
-  const products = getProducts();
-  const approved = products.filter((p: any) => p.status === 'approved');
-  return NextResponse.json(approved);
+  return NextResponse.json(products.filter(p => p.status === 'approved'));
 }
 
 export async function POST(request: Request) {
   try {
-    const product = await request.json();
-    const newProduct = addProduct(product);
+    const body = await request.json();
+    const newProduct = {
+      id: Date.now().toString(),
+      ...body,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    products.unshift(newProduct);
     return NextResponse.json(newProduct, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }
