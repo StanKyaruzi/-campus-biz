@@ -10,9 +10,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const product = await request.json();
-    const newProduct = addProduct({ ...product, status: 'pending' });
+    const newProduct = addProduct(product);
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
   }
 }
